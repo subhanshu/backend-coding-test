@@ -7,9 +7,14 @@
     "test": "tests"
   },
   "scripts": {
-    "test": "mocha tests",
-    "start": "nodemon index.js"
+    "lint": "eslint ./src/*;eslint ./*.js;",
+    "test": "npm run lint & nyc mocha tests --timeout 5000",
+    "start": "nodemon index.js",
+    "coverage": "nyc --reporter=lcov --reporter=text-lcov npm test"
   },
+  "pre-push": [
+    "test"
+  ],
   "keywords": [
     "Xendit"
   ],
@@ -20,10 +25,20 @@
     "express": "^4.16.4",
     "sqlite3": "^4.0.6",
     "swagger-jsdoc": "^3.2.9",
-    "swagger-ui-express": "^4.0.7"
+    "swagger-ui-express": "^4.0.7",
+    "winston": "^3.2.1"
   },
   "devDependencies": {
+    "eslint": "^6.0.1",
     "mocha": "^6.1.4",
+    "nyc": "^14.1.1",
+    "pre-push": "^0.1.1",
     "supertest": "^4.0.2"
+  },
+  "nyc":{
+    "branches": 80,
+    "lines": 80,
+    "statements": 80,
+    "check-coverage": true
   }
 }
