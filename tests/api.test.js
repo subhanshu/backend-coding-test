@@ -29,6 +29,7 @@ describe('API tests', () => {
   
   });
 
+  //Testing Health
   describe('GET /health', () => {
 
     it('should return health', (done) => {
@@ -41,6 +42,171 @@ describe('API tests', () => {
     });
   
   });
+
+  //Testing post rides
+  describe('POST /rides', () => {
+    it('Should insert a ride in database', (done) => {
+        request(app)
+            .post('/rides')
+            .send({
+                'start_lat': 90,
+                'start_long': 90,
+                'end_lat': 85,
+                'end_long': 85,
+                'rider_name': 'rider1',
+                'driver_name': 'driver1',
+                'driver_vehicle': 'vehicle1'
+            })
+            .expect('Content-Type', /json/)
+            .end((err, res) => {
+                if (err) {
+                    return done(err);
+                }
+                if (!('rideID' in res.body[0])) throw new Error("Ride Insert Failed");
+                return done();
+            });
+    });
+
+    it('Should return VALIDATION_ERROR for start latitude and longitude', (done) => {
+        request(app)
+            .post('/rides')
+            .send({
+                'start_lat': 190,
+                'start_long': 90,
+                'end_lat': 85,
+                'end_long': 85,
+                'rider_name': 'rider1',
+                'driver_name': 'driver1',
+                'driver_vehicle': 'vehicle1'
+            })
+            .expect('Content-Type', /json/)
+            .expect(200, {
+                error_code: 'VALIDATION_ERROR',
+                message: 'Start latitude and longitude must be between -90 - 90 and -180 to 180 degrees respectively'
+            }, done);
+    });
+
+    it('Should return VALIDATION_ERROR for end latitude and longitude', (done) => {
+        request(app)
+            .post('/rides')
+            .send({
+                'start_lat': 90,
+                'start_long': 90,
+                'end_lat': 115,
+                'end_long': 140,
+                'rider_name': 'rider1',
+                'driver_name': 'driver1',
+                'driver_vehicle': 'vehicle1'
+            })
+            .expect('Content-Type', /json/)
+            .expect(200, {
+                error_code: 'VALIDATION_ERROR',
+                message: 'End latitude and longitude must be between -90 - 90 and -180 to 180 degrees respectively'
+            }, done);
+    });
+
+    it('Should return VALIDATION_ERROR for empty rider name', (done) => {
+        request(app)
+            .post('/rides')
+            .send({
+                'start_lat': 90,
+                'start_long': 90,
+                'end_lat': 85,
+                'end_long': 85,
+                'rider_name': '',
+                'driver_name': 'driver1',
+                'driver_vehicle': 'vehicle1'
+            })
+            .expect('Content-Type', /json/)
+            .expect(200, {
+                error_code: 'VALIDATION_ERROR',
+                message: 'Rider name must be a non empty string'
+            }, done);
+    });
+
+    it('Should return VALIDATION_ERROR for empty driver name', (done) => {
+        request(app)
+            .post('/rides')
+            .send({
+                'start_lat': 90,
+                'start_long': 90,
+                'end_lat': 85,
+                'end_long': 85,
+                'rider_name': 'rider1',
+                'driver_name': '',
+                'driver_vehicle': 'vehicle1'
+            })
+            .expect('Content-Type', /json/)
+            .expect(200, {
+                error_code: 'VALIDATION_ERROR',
+                message: 'Driver name must be a non empty string'
+            }, done);
+    });
+
+    it('Should return VALIDATION_ERROR for empty vehicle plate', (done) => {
+        request(app)
+            .post('/rides')
+            .send({
+                'start_lat': 90,
+                'start_long': 90,
+                'end_lat': 85,
+                'end_long': 85,
+                'rider_name': 'rider1',
+                'driver_name': 'driver1',
+                'driver_vehicle': ''
+            })
+            .expect('Content-Type', /json/)
+            .expect(200, {
+                error_code: 'VALIDATION_ERROR',
+                message: 'Driver Vehicle must be a non empty string'
+            }, done);
+    });
+});
+
+describe('GET /rides', () => {
+    it('Should return all rides as array from the database', (done) => {
+        request(app)
+            .get('/rides')
+            .expect('Content-Type', /json/)
+            .end((err, res) => {
+                if (err) {
+                    return done(err);
+                }
+                if (!('rideID' in res.body[1])) throw new Error("Ride Data Missing");
+                return done();
+            });
+    });
+});
+
+//Testing GET Rides
+describe('GET /rides/:id', () => {
+    it('Should return RIDES_NOT_FOUND_ERROR if no ride exists with that id', (done) => {
+        request(app)
+            .get('/rides/5')
+            .expect('Content-Type', /json/)
+            .expect(200, {
+                "error_code": "RIDES_NOT_FOUND_ERROR",
+                "message": "Could not find any rides"
+            }, done);
+    });
+
+    it('Should return the ride specific to the given ID', (done) => {
+        request(app)
+            .get('/rides/1')
+            .expect('Content-Type', /json/)
+            .expect(200)
+            .end((err, res) => {
+                if (err) {
+                    return done(err);
+                }
+                if (!('rideID' in res.body[0])) throw new Error("Ride Data Missing");
+                if (!(res.body[0].rideID==1)) throw new Error("Ride does not match");
+                return done();
+            });
+    });
+
+});
+
 
  
 });
