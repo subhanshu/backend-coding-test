@@ -207,6 +207,17 @@ describe('GET /rides', () => {
 
     //Tests for pagination with invalid values
 
+    it('Should return RIDES_NOT_FOUND_ERROR rides from database', (done) => {
+        request(app)
+            .get('/rides')
+            .query({ page_no: 100, page_size: 5 })
+            .expect('Content-Type', /json/)
+            .expect(200,{
+                error_code: 'RIDES_NOT_FOUND_ERROR',
+                message: 'Could not find any rides'
+              }, done);
+    });
+
     it('Should return SERVER_ERROR if page size is missing', (done) => {
         request(app)
             .get('/rides')
@@ -247,10 +258,10 @@ describe('GET /rides/:id', () => {
         request(app)
             .get('/rides/45')
             .expect('Content-Type', /json/)
-            .expect(200, {
+            .expect(200, {msg:{
                 "error_code": "RIDES_NOT_FOUND_ERROR",
                 "message": "Could not find any rides"
-            }, done);
+            }}, done);
     });
 
     it('Should return the ride specific to the given ID', (done) => {
@@ -270,6 +281,27 @@ describe('GET /rides/:id', () => {
 
 });
 
+describe('POST /rides on closed DB', () => {
+it('Should return SERVER_ERROR', (done) => {
+    db.close();
+    request(app)
+        .post('/rides')
+        .send({
+            'start_lat': 90,
+            'start_long': 90,
+            'end_lat': 85,
+            'end_long': 85,
+            'rider_name': 'rider1',
+            'driver_name': 'driver1',
+            'driver_vehicle': 'vehicle1',
+        })
+        .expect('Content-Type', /json/)
+        .expect(200, {
+            error_code: 'SERVER_ERROR',
+            message: 'Unknown error'
+          }, done);
+});
 
+});
  
 });

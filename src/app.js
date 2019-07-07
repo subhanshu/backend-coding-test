@@ -18,6 +18,7 @@ const   logConfig = {
 //create logger
 const logger = winston.createLogger(logConfig);
 
+
 const swaggerSpec = swaggerJSDoc(swaggerDef);
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
@@ -26,6 +27,9 @@ const bodyParser = require('body-parser');
 const jsonParser = bodyParser.json();
 
 module.exports = (db) => {
+
+  const rides = require('./ridecalls')(db);
+
 
   /**
      * @swagger
@@ -45,7 +49,7 @@ module.exports = (db) => {
      *       500:
      *          description: Server Error, Need to check server
      */
-  app.get('/health', (req, res) => res.send('Healthy'));
+  app.get('/health', async(req, res) => await res.send('Healthy'));
 
   /**
     * @swagger
@@ -135,7 +139,7 @@ module.exports = (db) => {
     *       500:
     *          description: Server Error, Need to check server
     */
-  app.post('/rides', jsonParser, (req, res) => {
+  app.post('/rides', jsonParser, async(req, res) => {
 
     const startLatitude = Number(req.body.start_lat);
     const startLongitude = Number(req.body.start_long);
@@ -202,37 +206,17 @@ module.exports = (db) => {
 
     let values = [req.body.start_lat, req.body.start_long, req.body.end_lat, req.body.end_long, req.body.rider_name, req.body.driver_name, req.body.driver_vehicle];
         
-    db.run('INSERT INTO Rides(startLat, startLong, endLat, endLong, riderName, driverName, driverVehicle) VALUES (?, ?, ?, ?, ?, ?, ?)', values, function(err) {
+    try{
 
-      if (err) {
-
-        const msg = {
-          error_code: 'SERVER_ERROR',
-          message: 'Unknown error'
-        }
-        logger.error(msg.error_code + ' - ' +msg.message);
-        return res.send(msg);
-      
-      }
-
-      db.all('SELECT * FROM Rides WHERE rideID = ?', this.lastID, function(err, rows) {
-
-        if (err) {
-
-          const msg = {
-            error_code: 'SERVER_ERROR',
-            message: 'Unknown error'
-          }
-          logger.error(msg.error_code + ' - ' +msg.message);
-          return res.send(msg);
-        
-        }
-
-        res.send(rows);
-      
-      });
+      const result = await rides.saveRide(values);
+      res.send(result);
     
-    });
+    }
+    catch(err){
+
+      res.send(err);
+    
+    }
   
   });
 
@@ -294,10 +278,9 @@ module.exports = (db) => {
     *       500:
     *          description: Server Error, Need to check server
     */
-  app.get('/rides', (req, res) => {
+  app.get('/rides', async(req, res) => {
 
     let sql='';
-
     if(Object.keys(req.query).length === 0){
 
       sql = 'SELECT * FROM Rides'
@@ -311,34 +294,17 @@ module.exports = (db) => {
       sql = 'SELECT * FROM Rides LIMIT ' + page_size + ' OFFSET '+ (page_no-1)*page_size; 
     
     }
+    try{
+
+      const result = await rides.getRides(sql);
+      res.send(result)
     
-    db.all(sql, function(err, rows) {
+    }
+    catch(err){
 
-      if (err) {
-
-        const msg = {
-          error_code: 'SERVER_ERROR',
-          message: 'Unknown error'
-        }
-        logger.error(msg.error_code + ' - ' +msg.message + err);
-        return res.send(msg);
-      
-      }
-
-      if (rows.length === 0) {
-
-        const msg = {
-          error_code: 'RIDES_NOT_FOUND_ERROR',
-          message: 'Could not find any rides'
-        }
-        logger.error(msg.error_code + ' - ' +msg.message);
-        return res.send(msg);
-                
-      }
-
-      res.send(rows);
+      res.send(err);
     
-    });
+    }
   
   });
 
@@ -398,36 +364,20 @@ module.exports = (db) => {
     *       500:
     *          description: Server Error, Need to check server
     */
-  app.get('/rides/:id', (req, res) => {
+  app.get('/rides/:id', async(req, res) => {
 
-    db.all(`SELECT * FROM Rides WHERE rideID='${req.params.id}'`, function(err, rows) {
+    try{
 
-      if (err) {
-
-        const msg = {
-          error_code: 'SERVER_ERROR',
-          message: 'Unknown error'
-        }
-        logger.error(msg.error_code + ' - ' +msg.message);
-        return res.send(msg);
-      
-      }
-
-      if (rows.length === 0) {
-
-        const msg = {
-          error_code: 'RIDES_NOT_FOUND_ERROR',
-          message: 'Could not find any rides'
-        }
-        logger.error(msg.error_code + ' - ' +msg.message);
-        return res.send(msg);
-      
-      }
-
-      res.send(rows);
+      const result = await rides.getRidesById(req.params.id);
+      await res.send(result);
     
-    });
-  
+    }
+    catch(err){
+
+      await res.send(err);
+    
+    }
+    
   });
 
   return app;
