@@ -245,9 +245,18 @@ module.exports = (db) => {
     *        - Rides
     *     name: Get Rides
     *     summary: Get a list of rides
-    *     description: Use this API call to get all the rides in the system
+    *     description: Use this API call to get all the rides in the system. Without any parameters it will return all the records else if you want to use pagination then provide the two parameters 'page_no' and 'page_size'
     *     produces:
     *       - application/json
+    *     parameters:
+    *       - name: page_size
+    *         description: No of records you want to get from the API
+    *         type: integer
+    *         required: false
+    *       - name: page_no
+    *         description: Page no of the records you want to pull
+    *         type: integer
+    *         required: false
     *     responses:
     *       200:
     *           description: "Returns an array of all rides in the system. In case of validation errors, Error Message is shown {error_code: 'VALIDATION_ERROR', message: 'message'}"
@@ -287,7 +296,23 @@ module.exports = (db) => {
     */
   app.get('/rides', (req, res) => {
 
-    db.all('SELECT * FROM Rides', function(err, rows) {
+    let sql='';
+
+    if(Object.keys(req.query).length === 0){
+
+      sql = 'SELECT * FROM Rides'
+    
+    }
+    else{
+
+      const page_no = Number(req.query.page_no);
+      const page_size = Number(req.query.page_size);
+
+      sql = 'SELECT * FROM Rides LIMIT ' + page_size + ' OFFSET '+ (page_no-1)*page_size; 
+    
+    }
+    
+    db.all(sql, function(err, rows) {
 
       if (err) {
 
@@ -295,7 +320,7 @@ module.exports = (db) => {
           error_code: 'SERVER_ERROR',
           message: 'Unknown error'
         }
-        logger.error(msg.error_code + ' - ' +msg.message);
+        logger.error(msg.error_code + ' - ' +msg.message + err);
         return res.send(msg);
       
       }
@@ -340,8 +365,9 @@ module.exports = (db) => {
     *       200:
     *           description: "Returns ride data. In case of no rides for the requested id, Error Message is shown {error_code: 'RIDES_NOT_FOUND_ERROR', message: 'Could not find any rides'}"
     *           schema:
-    *               type: object
-    *               properties:
+    *               type: array
+    *               items:
+    *                 properties:
     *                       rideID:
     *                           type: integer
     *                           description: Id of the ride created using the request

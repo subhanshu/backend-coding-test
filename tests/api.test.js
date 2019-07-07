@@ -22,6 +22,18 @@ describe('API tests', () => {
       buildSchemas(db);
       const values = [90, 90, 85, 85, 'rider1', 'driver1', 'vehicle1'];
       db.run('INSERT INTO Rides(startLat, startLong, endLat, endLong, riderName, driverName, driverVehicle) VALUES (?, ?, ?, ?, ?, ?, ?)', values);
+      db.run('INSERT INTO Rides(startLat, startLong, endLat, endLong, riderName, driverName, driverVehicle) VALUES (?, ?, ?, ?, ?, ?, ?)', values);
+      db.run('INSERT INTO Rides(startLat, startLong, endLat, endLong, riderName, driverName, driverVehicle) VALUES (?, ?, ?, ?, ?, ?, ?)', values);
+      db.run('INSERT INTO Rides(startLat, startLong, endLat, endLong, riderName, driverName, driverVehicle) VALUES (?, ?, ?, ?, ?, ?, ?)', values);
+      db.run('INSERT INTO Rides(startLat, startLong, endLat, endLong, riderName, driverName, driverVehicle) VALUES (?, ?, ?, ?, ?, ?, ?)', values);
+      db.run('INSERT INTO Rides(startLat, startLong, endLat, endLong, riderName, driverName, driverVehicle) VALUES (?, ?, ?, ?, ?, ?, ?)', values);
+      db.run('INSERT INTO Rides(startLat, startLong, endLat, endLong, riderName, driverName, driverVehicle) VALUES (?, ?, ?, ?, ?, ?, ?)', values);
+      db.run('INSERT INTO Rides(startLat, startLong, endLat, endLong, riderName, driverName, driverVehicle) VALUES (?, ?, ?, ?, ?, ?, ?)', values);
+      db.run('INSERT INTO Rides(startLat, startLong, endLat, endLong, riderName, driverName, driverVehicle) VALUES (?, ?, ?, ?, ?, ?, ?)', values);
+      db.run('INSERT INTO Rides(startLat, startLong, endLat, endLong, riderName, driverName, driverVehicle) VALUES (?, ?, ?, ?, ?, ?, ?)', values);
+      db.run('INSERT INTO Rides(startLat, startLong, endLat, endLong, riderName, driverName, driverVehicle) VALUES (?, ?, ?, ?, ?, ?, ?)', values);
+      db.run('INSERT INTO Rides(startLat, startLong, endLat, endLong, riderName, driverName, driverVehicle) VALUES (?, ?, ?, ?, ?, ?, ?)', values);
+      db.run('INSERT INTO Rides(startLat, startLong, endLat, endLong, riderName, driverName, driverVehicle) VALUES (?, ?, ?, ?, ?, ?, ?)', values);
 
       done();
     
@@ -176,13 +188,64 @@ describe('GET /rides', () => {
                 return done();
             });
     });
+    //Tests for pagination
+    it('Should return 5 rides from database', (done) => {
+        request(app)
+            .get('/rides')
+            .query({ page_no: 1, page_size: 5 })
+            .expect('Content-Type', /json/)
+            .expect(200)
+            .end((err, res) => {
+                if (err) {
+                    return done(err);
+                }
+                if (!(res.body.length==5)) throw new Error("Incorrect Page Size");
+                if (!(res.body[0].rideID==1)) throw new Error("Ride does not match");
+                return done(err);
+            });
+    });
+
+    //Tests for pagination with invalid values
+
+    it('Should return SERVER_ERROR if page size is missing', (done) => {
+        request(app)
+            .get('/rides')
+            .query({ page_no: 1 })
+            .expect('Content-Type', /json/)
+            .expect(200,{
+                error_code: 'SERVER_ERROR',
+                message: 'Unknown error'
+              }, done);
+    });
+
+    it('Should return SERVER_ERROR if page no is missing', (done) => {
+        request(app)
+            .get('/rides')
+            .query({ page_size: 1 })
+            .expect('Content-Type', /json/)
+            .expect(200,{
+                error_code: 'SERVER_ERROR',
+                message: 'Unknown error'
+              }, done);
+    });
+
+    it('Should return SERVER_ERROR if invalid values are there', (done) => {
+        request(app)
+            .get('/rides')
+            .query({ page_size: 'x', page_no:1 })
+            .expect('Content-Type', /json/)
+            .expect(200,{
+                error_code: 'SERVER_ERROR',
+                message: 'Unknown error'
+              }, done);
+    });
 });
 
 //Testing GET Rides
 describe('GET /rides/:id', () => {
     it('Should return RIDES_NOT_FOUND_ERROR if no ride exists with that id', (done) => {
         request(app)
-            .get('/rides/5')
+            .get('/rides/45')
             .expect('Content-Type', /json/)
             .expect(200, {
                 "error_code": "RIDES_NOT_FOUND_ERROR",
