@@ -10,7 +10,8 @@
     "lint": "eslint ./src/*;eslint ./*.js;",
     "test": "npm run lint & nyc mocha tests --timeout 10000",
     "start": "nodemon index.js",
-    "coverage": "nyc --reporter=lcov --reporter=text-lcov npm test"
+    "coverage": "nyc --reporter=lcov --reporter=text-lcov npm test",
+    "travis": "npm-travis"
   },
   "pre-push": [
     "test"
