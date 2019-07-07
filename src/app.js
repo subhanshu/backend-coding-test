@@ -2,25 +2,11 @@
 
 const express = require('express');
 const app = express();
+//Swagger
 const swaggerUi = require('swagger-ui-express');
 const swaggerJSDoc = require('swagger-jsdoc');
 const swaggerDef = require('../swaggerDef');
-
-//Winston
-const winston = require('winston');
-const   logConfig = {
-  'transports':[
-    new winston.transports.File({
-      filename:'./logs/api.log'
-    })
-  ]
-};
-//create logger
-const logger = winston.createLogger(logConfig);
-
-
 const swaggerSpec = swaggerJSDoc(swaggerDef);
-
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 const bodyParser = require('body-parser');
@@ -141,74 +127,9 @@ module.exports = (db) => {
     */
   app.post('/rides', jsonParser, async(req, res) => {
 
-    const startLatitude = Number(req.body.start_lat);
-    const startLongitude = Number(req.body.start_long);
-    const endLatitude = Number(req.body.end_lat);
-    const endLongitude = Number(req.body.end_long);
-    const riderName = req.body.rider_name;
-    const driverName = req.body.driver_name;
-    const driverVehicle = req.body.driver_vehicle;
-
-    if (startLatitude < -90 || startLatitude > 90 || startLongitude < -180 || startLongitude > 180) {
-
-      const msg = {
-        error_code: 'VALIDATION_ERROR',
-        message: 'Start latitude and longitude must be between -90 - 90 and -180 to 180 degrees respectively'
-      }
-      logger.error(msg.error_code + ' - ' +msg.message);
-      return res.send(msg);
-    
-    }
-
-    if (endLatitude < -90 || endLatitude > 90 || endLongitude < -180 || endLongitude > 180) {
-
-      const msg = {
-        error_code: 'VALIDATION_ERROR',
-        message: 'End latitude and longitude must be between -90 - 90 and -180 to 180 degrees respectively'
-      }
-      logger.error(msg.error_code + ' - ' +msg.message);
-      return res.send(msg);
-    
-    }
-
-    if (typeof riderName !== 'string' || riderName.length < 1) {
-
-      const msg = {
-        error_code: 'VALIDATION_ERROR',
-        message: 'Rider name must be a non empty string'
-      }
-      logger.error(msg.error_code + ' - ' +msg.message);
-      return res.send(msg);
-    
-    }
-
-    if (typeof driverName !== 'string' || driverName.length < 1) {
-
-      const msg = {
-        error_code: 'VALIDATION_ERROR',
-        message: 'Driver name must be a non empty string'
-      }
-      logger.error(msg.error_code + ' - ' +msg.message);
-      return res.send(msg);
-    
-    }
-
-    if (typeof driverVehicle !== 'string' || driverVehicle.length < 1) {
-
-      const msg = {
-        error_code: 'VALIDATION_ERROR',
-        message: 'Driver Vehicle must be a non empty string'
-      }
-      logger.error(msg.error_code + ' - ' +msg.message);
-      return res.send(msg);
-    
-    }
-
-    let values = [req.body.start_lat, req.body.start_long, req.body.end_lat, req.body.end_long, req.body.rider_name, req.body.driver_name, req.body.driver_vehicle];
-        
     try{
 
-      const result = await rides.saveRide(values);
+      const result = await rides.saveRide(req);
       res.send(result);
     
     }
@@ -280,23 +201,10 @@ module.exports = (db) => {
     */
   app.get('/rides', async(req, res) => {
 
-    let sql='';
-    if(Object.keys(req.query).length === 0){
-
-      sql = 'SELECT * FROM Rides'
     
-    }
-    else{
-
-      const page_no = Number(req.query.page_no);
-      const page_size = Number(req.query.page_size);
-
-      sql = 'SELECT * FROM Rides LIMIT ' + page_size + ' OFFSET '+ (page_no-1)*page_size; 
-    
-    }
     try{
 
-      const result = await rides.getRides(sql);
+      const result = await rides.getRides(req);
       res.send(result)
     
     }
