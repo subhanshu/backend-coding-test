@@ -8,7 +8,7 @@
   },
   "scripts": {
     "lint": "eslint ./src/*;eslint ./*.js;",
-    "test": "npm run lint & nyc mocha tests --timeout 5000",
+    "test": "mocha tests",
     "start": "nodemon index.js",
     "coverage": "nyc --reporter=lcov --reporter=text-lcov npm test"
   },
@@ -35,7 +35,7 @@
     "pre-push": "^0.1.1",
     "supertest": "^4.0.2"
   },
-  "nyc":{
+  "nyc": {
     "branches": 80,
     "lines": 80,
     "statements": 80,
