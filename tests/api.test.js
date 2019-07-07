@@ -10,12 +10,13 @@ const buildSchemas = require('../src/schemas');
 
 describe('API tests', () => {
     before((done) => {
-        db.serialize((err) => { 
+        db.serialize((err) => {
             if (err) {
                 return done(err);
             }
-
             buildSchemas(db);
+            const values = [90, 90, 85, 85, 'rider1', 'driver1', 'vehicle1'];
+            db.run('INSERT INTO Rides(startLat, startLong, endLat, endLong, riderName, driverName, driverVehicle) VALUES (?, ?, ?, ?, ?, ?, ?)', values);
 
             done();
         });
@@ -29,4 +30,6 @@ describe('API tests', () => {
                 .expect(200, done);
         });
     });
+
+ 
 });
