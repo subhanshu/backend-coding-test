@@ -8,7 +8,7 @@
   },
   "scripts": {
     "lint": "eslint ./src/*;eslint ./*.js;",
-    "test": "mocha tests",
+    "test": "npm run lint & nyc mocha tests --timeout 5000",
     "start": "nodemon index.js",
     "coverage": "nyc --reporter=lcov --reporter=text-lcov npm test"
   },
