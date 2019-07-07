@@ -1,6 +1,7 @@
 'use strict';
 
 const request = require('supertest');
+const assert = require('assert');
 
 const sqlite3 = require('sqlite3').verbose();
 const db = new sqlite3.Database(':memory:');
@@ -8,38 +9,106 @@ const db = new sqlite3.Database(':memory:');
 const app = require('../src/app')(db);
 const buildSchemas = require('../src/schemas');
 
-describe('API tests', () => {
+const rides = require('../src/ridecalls')(db);
 
-  before((done) => {
+describe('Function tests', () =>{
+    before((done) => {
 
-    db.serialize((err) => {
-
-      if (err) {
-
-        return done(err);
-      
-      }
-      buildSchemas(db);
-      const values = [90, 90, 85, 85, 'rider1', 'driver1', 'vehicle1'];
-      db.run('INSERT INTO Rides(startLat, startLong, endLat, endLong, riderName, driverName, driverVehicle) VALUES (?, ?, ?, ?, ?, ?, ?)', values);
-      db.run('INSERT INTO Rides(startLat, startLong, endLat, endLong, riderName, driverName, driverVehicle) VALUES (?, ?, ?, ?, ?, ?, ?)', values);
-      db.run('INSERT INTO Rides(startLat, startLong, endLat, endLong, riderName, driverName, driverVehicle) VALUES (?, ?, ?, ?, ?, ?, ?)', values);
-      db.run('INSERT INTO Rides(startLat, startLong, endLat, endLong, riderName, driverName, driverVehicle) VALUES (?, ?, ?, ?, ?, ?, ?)', values);
-      db.run('INSERT INTO Rides(startLat, startLong, endLat, endLong, riderName, driverName, driverVehicle) VALUES (?, ?, ?, ?, ?, ?, ?)', values);
-      db.run('INSERT INTO Rides(startLat, startLong, endLat, endLong, riderName, driverName, driverVehicle) VALUES (?, ?, ?, ?, ?, ?, ?)', values);
-      db.run('INSERT INTO Rides(startLat, startLong, endLat, endLong, riderName, driverName, driverVehicle) VALUES (?, ?, ?, ?, ?, ?, ?)', values);
-      db.run('INSERT INTO Rides(startLat, startLong, endLat, endLong, riderName, driverName, driverVehicle) VALUES (?, ?, ?, ?, ?, ?, ?)', values);
-      db.run('INSERT INTO Rides(startLat, startLong, endLat, endLong, riderName, driverName, driverVehicle) VALUES (?, ?, ?, ?, ?, ?, ?)', values);
-      db.run('INSERT INTO Rides(startLat, startLong, endLat, endLong, riderName, driverName, driverVehicle) VALUES (?, ?, ?, ?, ?, ?, ?)', values);
-      db.run('INSERT INTO Rides(startLat, startLong, endLat, endLong, riderName, driverName, driverVehicle) VALUES (?, ?, ?, ?, ?, ?, ?)', values);
-      db.run('INSERT INTO Rides(startLat, startLong, endLat, endLong, riderName, driverName, driverVehicle) VALUES (?, ?, ?, ?, ?, ?, ?)', values);
-      db.run('INSERT INTO Rides(startLat, startLong, endLat, endLong, riderName, driverName, driverVehicle) VALUES (?, ?, ?, ?, ?, ?, ?)', values);
-
-      done();
+        db.serialize((err) => {
     
+          if (err) {
+    
+            return done(err);
+          
+          }
+          buildSchemas(db);
+          const values = [90, 90, 85, 85, 'rider1', 'driver1', 'vehicle1'];
+          db.run('INSERT INTO Rides(startLat, startLong, endLat, endLong, riderName, driverName, driverVehicle) VALUES (?, ?, ?, ?, ?, ?, ?)', values);
+          db.run('INSERT INTO Rides(startLat, startLong, endLat, endLong, riderName, driverName, driverVehicle) VALUES (?, ?, ?, ?, ?, ?, ?)', values);
+          db.run('INSERT INTO Rides(startLat, startLong, endLat, endLong, riderName, driverName, driverVehicle) VALUES (?, ?, ?, ?, ?, ?, ?)', values);
+          db.run('INSERT INTO Rides(startLat, startLong, endLat, endLong, riderName, driverName, driverVehicle) VALUES (?, ?, ?, ?, ?, ?, ?)', values);
+          db.run('INSERT INTO Rides(startLat, startLong, endLat, endLong, riderName, driverName, driverVehicle) VALUES (?, ?, ?, ?, ?, ?, ?)', values);
+          db.run('INSERT INTO Rides(startLat, startLong, endLat, endLong, riderName, driverName, driverVehicle) VALUES (?, ?, ?, ?, ?, ?, ?)', values);
+          db.run('INSERT INTO Rides(startLat, startLong, endLat, endLong, riderName, driverName, driverVehicle) VALUES (?, ?, ?, ?, ?, ?, ?)', values);
+          db.run('INSERT INTO Rides(startLat, startLong, endLat, endLong, riderName, driverName, driverVehicle) VALUES (?, ?, ?, ?, ?, ?, ?)', values);
+          db.run('INSERT INTO Rides(startLat, startLong, endLat, endLong, riderName, driverName, driverVehicle) VALUES (?, ?, ?, ?, ?, ?, ?)', values);
+          db.run('INSERT INTO Rides(startLat, startLong, endLat, endLong, riderName, driverName, driverVehicle) VALUES (?, ?, ?, ?, ?, ?, ?)', values);
+          db.run('INSERT INTO Rides(startLat, startLong, endLat, endLong, riderName, driverName, driverVehicle) VALUES (?, ?, ?, ?, ?, ?, ?)', values);
+          db.run('INSERT INTO Rides(startLat, startLong, endLat, endLong, riderName, driverName, driverVehicle) VALUES (?, ?, ?, ?, ?, ?, ?)', values);
+          db.run('INSERT INTO Rides(startLat, startLong, endLat, endLong, riderName, driverName, driverVehicle) VALUES (?, ?, ?, ?, ?, ?, ?)', values);
+    
+          done();
+        
+        });
+      
+      });
+      describe('Should save ride',  ()=>{
+            it('It Should save a ride in DB', async (done) => {
+
+                assert.doesNotReject(rides.saveRide(90, 90, 85, 85, 'rider1', 'driver1', 'vehicle1'));
+                done();
+
+            });                   
+            it('Should reject for wrong start latitude', async (done) => {
+
+                assert.rejects(rides.saveRide(190, 90, 85, 85, 'rider1', 'driver1', 'vehicle1'));
+                done();
+
+            });  
+            it('Should reject for wrong end latitude', async (done) => {
+
+                assert.rejects(rides.saveRide(90, 90, 185, 85, 'rider1', 'driver1', 'vehicle1'));
+                done();
+
+            });  
+            it('Should reject for invalid rider', async (done) => {
+
+                assert.rejects(rides.saveRide(90, 90, 185, 85, '', 'driver1', 'vehicle1'));
+                done();
+
+            }); 
+            it('Should reject for invalid drive', async (done) => {
+
+                assert.rejects(rides.saveRide(90, 90, 185, 85, 'rider1', '', 'vehicle1'));
+                done();
+
+            }); 
+            it('Should reject for invalid vehicle', async (done) => {
+
+                assert.rejects(rides.saveRide(90, 90, 185, 85, 'rider1', 'driver1', ''));
+                done();
+
+            }); 
+
+
+            //Test Get Ride by ID
+          
     });
-  
-  });
+
+    describe('Get Rides', ()=>{
+        it('Should get a ride by id', async (done)=>{
+            assert.doesNotReject(rides.getRidesById(1),);
+            done();
+        });
+
+        it('Should get all rides', async (done)=>{
+            assert.doesNotReject(rides.getRides(-1,-1),(err)=>{
+                console.log(err);
+            });
+            done();
+        });
+
+        it('Should get all rides by page ',async (done)=>{
+            assert.doesNotReject(rides.getRides(1,5));
+            done();
+        });
+        
+
+    });
+
+});
+
+describe('API tests', () => {
 
   //Testing Health
   describe('GET /health', () => {
