@@ -15,20 +15,11 @@ module.exports = (db) => {
 
   let rides={};
 
-  rides.saveRide = (req) => {
+  rides.saveRide = (startLatitude, startLongitude, endLatitude, endLongitude, riderName, driverName,driverVehicle) => {
     
     return new Promise((resolve,reject)=>{
 
       //Validate Parameters
-
-      const startLatitude = Number(req.body.start_lat);
-      const startLongitude = Number(req.body.start_long);
-      const endLatitude = Number(req.body.end_lat);
-      const endLongitude = Number(req.body.end_long);
-      const riderName = req.body.rider_name;
-      const driverName = req.body.driver_name;
-      const driverVehicle = req.body.driver_vehicle;
-
       if (startLatitude < -90 || startLatitude > 90 || startLongitude < -180 || startLongitude > 180) {
 
         const msg = {
@@ -36,7 +27,7 @@ module.exports = (db) => {
           message: 'Start latitude and longitude must be between -90 - 90 and -180 to 180 degrees respectively'
         }
         logger.error(msg.error_code + ' - ' +msg.message);
-        reject(msg);    
+        reject(msg); 
       
       }
 
@@ -84,7 +75,7 @@ module.exports = (db) => {
       
       }
 
-      let values = [req.body.start_lat, req.body.start_long, req.body.end_lat, req.body.end_long, req.body.rider_name, req.body.driver_name, req.body.driver_vehicle];
+      let values = [startLatitude, startLongitude, endLatitude, endLongitude, riderName, driverName,driverVehicle];
         
       db.run('INSERT INTO Rides(startLat, startLong, endLat, endLong, riderName, driverName, driverVehicle) VALUES (?, ?, ?, ?, ?, ?, ?)', values, function(err) {
 
@@ -122,20 +113,18 @@ module.exports = (db) => {
  
   };
 
-  rides.getRides = (req) => {
+  rides.getRides = (page_no, page_size) => {
 
     return new Promise((resolve, reject)=>{
 
       let sql='';
-      if(Object.keys(req.query).length === 0){
+      //console.log(page_no);
+      if(page_no === -1 && page_size === -1){
     
         sql = 'SELECT * FROM Rides'
         
       }
       else{
-    
-        const page_no = Number(req.query.page_no);
-        const page_size = Number(req.query.page_size);
     
         sql = 'SELECT * FROM Rides LIMIT ' + page_size + ' OFFSET '+ (page_no-1)*page_size; 
         

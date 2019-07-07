@@ -35,7 +35,7 @@ module.exports = (db) => {
      *       500:
      *          description: Server Error, Need to check server
      */
-  app.get('/health', async(req, res) => await res.send('Healthy'));
+  app.get('/health', (req, res) =>  res.send('Healthy'));
 
   /**
     * @swagger
@@ -127,9 +127,18 @@ module.exports = (db) => {
     */
   app.post('/rides', jsonParser, async(req, res) => {
 
+    const startLatitude = Number(req.body.start_lat);
+    const startLongitude = Number(req.body.start_long);
+    const endLatitude = Number(req.body.end_lat);
+    const endLongitude = Number(req.body.end_long);
+    const riderName = req.body.rider_name;
+    const driverName = req.body.driver_name;
+    const driverVehicle = req.body.driver_vehicle;
+
+
     try{
 
-      const result = await rides.saveRide(req);
+      const result = await rides.saveRide(startLatitude, startLongitude, endLatitude, endLongitude, riderName, driverName,driverVehicle);
       res.send(result);
     
     }
@@ -201,10 +210,25 @@ module.exports = (db) => {
     */
   app.get('/rides', async(req, res) => {
 
+    let page_no;
+    let page_size;
+    if(Object.keys(req.query).length === 0){
+
+      page_no =-1;
+      page_size = -1
+    
+    }
+    else
+    {
+
+      page_no = req.query.page_no;
+      page_size = req.query.page_size;
+    
+    }
     
     try{
 
-      const result = await rides.getRides(req);
+      const result = await rides.getRides(page_no, page_size);
       res.send(result)
     
     }
