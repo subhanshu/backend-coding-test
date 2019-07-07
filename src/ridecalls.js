@@ -117,19 +117,21 @@ module.exports = (db) => {
 
     return new Promise((resolve, reject)=>{
 
+      let values =[];
       let sql='';
       //console.log(page_no);
       if(page_no === -1 && page_size === -1){
     
-        sql = 'SELECT * FROM Rides'
+        sql = 'SELECT * FROM Rides';
         
       }
       else{
     
-        sql = 'SELECT * FROM Rides LIMIT ' + page_size + ' OFFSET '+ (page_no-1)*page_size; 
+        sql = 'SELECT * FROM Rides LIMIT ? OFFSET ?'; 
+        values=[page_size,(page_no-1)*page_size]
         
       }
-      db.all(sql, function(err, rows) {
+      db.all(sql,values, function(err, rows) {
            
         if (err) {
 
@@ -168,7 +170,7 @@ module.exports = (db) => {
 
     return new Promise((resolve, reject) => {
 
-      db.all(`SELECT * FROM Rides WHERE rideID=${rideID}`, function(err, rows) {
+      db.all('SELECT * FROM Rides WHERE rideID=?',[rideID], function(err, rows) {
 
         if (err) {
 
